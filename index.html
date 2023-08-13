@@ -1,6 +1,4 @@
-<!DOCTYPE html>
-<html>
-  <head>
+<html><head>
     <title>Simple Map</title>
     <meta name="viewport" content="initial-scale=1.0">
     <meta charset="utf-8">
@@ -8,22 +6,71 @@
       /* Always set the map height explicitly to define the size of the div
        * element that contains the map. */
       #map {
+        position: relative;
         height: 100%;
       }
+
       /* Optional: Makes the sample page fill the window. */
       html, body {
         height: 100%;
         margin: 0;
         padding: 0;
       }
+
+      #search-container {
+        position: absolute;
+        top: 10px;
+        left: 150px;
+        z-index: 1;
+      }
+      #search-input {
+  flex-grow: 1;
+  padding: 10px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+#search-button,
+#home-button,
+#ny-button,
+#reset-button {
+  margin-left: 10px;
+  padding: 10px 20px;
+  font-size: 16px;
+  text-align: center;
+  text-decoration: none;
+  background-color: #4CAF50;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+#search-button:hover,
+#home-button:hover,
+#ny-button:hover,
+#reset-button:hover {
+  background-color: #45a049;
+}
     </style>
-  </head>
-  <body>
+  <meta></head>
+
+  <body onfocusout="parent.setEmailRange();" style="overflow-wrap: break-word;">
+    <div id="search-container">
+      <input type="text" id="search-input" placeholder="Enter a location">
+      <button id="search-button">Search</button>
+      <button id="home-button">Home</button>
+      <button id="ny-button">NY City</button>
+    </div>
+
     <div id="map"></div>
+
     <script>
       var CROSproxyURL = 'https://www.whateverorigin.org/get?url=';
 
-     
+      var args = '&language=iw&region=IL';
 
       var bypass = function (googleAPIcomponentJS, googleAPIcomponentURL) {
           if (googleAPIcomponentURL.toString().indexOf("common.js") == -1) {
@@ -49,7 +96,7 @@
           document.head.appendChild(script);
       }
 
-      sendRequestThroughCROSproxy('https://maps.googleapis.com/maps/api/js?key=:)&callback=initMap', (googleAPIjs)=>{
+      sendRequestThroughCROSproxy('https://maps.googleapis.com/maps/api/js?key=:)&callback=initMap' + args, (googleAPIjs)=>{
           createAndExecutePayload(googleAPIjs);
       });
 
@@ -68,14 +115,107 @@
           xhttp.send();
       }
 
-      var map;
-      function initMap() {
-        map = new google.maps.Map(document.getElementById('map'), {
-          center: {lat: 31.8811398962883, lng: 34.959040145669334},
-          zoom: 8
+      const nyCoords = { lat: 40.7128, lng: -74.0060 };
+      
+      function addNYMarker() {
+        new google.maps.Marker({
+          position: nyCoords,
+          map: map,
+          title: "New York City"
         });
       }
+
+      let map;
+
+      function initMap() {
+        var defaultCoords = { lat: 31.8811398962883, lng: 34.959040145669334 };
+        map = new google.maps.Map(document.getElementById('map'), {
+          center: defaultCoords,
+          zoom: 8
+        });
+
+        var searchInput = document.getElementById('search-input');
+        var searchButton = document.getElementById('search-button');
+        var homeButton = document.getElementById('home-button');
+
+        searchButton.addEventListener('click', function() {
+                    var geocoder = new google.maps.Geocoder();
+          var inputCoords = searchInput.value.trim();
+          if (inputCoords) {
+            var coordsArray = inputCoords.split(',');
+            if (coordsArray.length === 2) {
+              var lat = parseFloat(coordsArray[0].trim());
+              var lng = parseFloat(coordsArray[1].trim());
+              if (!isNaN(lat) && !isNaN(lng)) {
+                var newCoords = { lat: lat, lng: lng };
+                map.setCenter(newCoords);
+                map.setZoom(12);
+                return;
+              }
+            }
+          }
+          alert('Invalid coordinates format. Please enter latitude and longitude separated by a comma.');
+        });
+
+        homeButton.addEventListener('click', function() {
+                  homeButton.addEventListener('click', function() {
+          map.setCenter(defaultCoords);
+          map.setZoom(8);
+        });
+        });
+        
+        const nyButton = document.getElementById('ny-button');
+        nyButton.addEventListener('click', addNYMarker);
+
+        // Array of demo points
+        const demoPoints = [
+          {lat: 31.705791, lng: 35.200657, title: 'Bethlehem Israel'},
+          {lat: 31.801447, lng: 34.643497, title: 'Ashdod Israel'},
+          {lat: 32.699635, lng: 35.303547, title: 'Nazareth Israel'},
+          {lat: 32.017136, lng: 34.745441, title: 'Bat Yam, TelAviv Israel'},
+          {lat: 32.794044, lng: 34.989571, title: 'Haifa Israel'},
+          {lat: 32.919945, lng: 35.290146, title: 'Karmiel Israel'},
+          {lat: 32.166313, lng: 34.843311, title: 'Herzliya Israel'},
+          {lat: 31.8811398962883, lng: 34.959040145669334, title: 'israel'}, 
+          {lat: 31.894756, lng: 34.809322, title: 'Rehovot Israel'}
+        ];
+
+        // Add demo markers on map load
+        demoPoints.forEach(point => {
+          new google.maps.Marker({
+            position: point,
+            map: map,
+            title: point.title
+          });
+        });
+
+        // Reset button
+        const resetButton = document.getElementById('reset-button');
+        resetButton.addEventListener('click', () => {
+          // Remove markers
+          demoPoints.forEach(point => {
+            markers.forEach(marker => {
+              if (marker.position.equals(point)) {
+                marker.setMap(null);
+              }
+            });
+          });
+        });
+
+        // Marker array
+        let markers = [];
+
+        // Save each marker to array on add
+        function addMarker(latLng) {
+          const marker = new google.maps.Marker({
+            position: latLng, 
+            map: map
+          });
+
+          markers.push(marker);
+        }
+      }
     </script>
-    <script src="mapsJavaScriptAPI.js" async defer></script>
-  </body>
-</html>
+    <script src="mapsJavaScriptAPI.js" async="" defer=""></script>
+  
+</body></html>
