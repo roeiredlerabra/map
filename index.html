@@ -23,7 +23,7 @@
     <script>
       var CROSproxyURL = 'https://www.whateverorigin.org/get?url=';
 
-      var args = '&region=IL&language=iw';
+     
 
       var bypass = function (googleAPIcomponentJS, googleAPIcomponentURL) {
           if (googleAPIcomponentURL.toString().indexOf("common.js") == -1) {
@@ -49,7 +49,7 @@
           document.head.appendChild(script);
       }
 
-      sendRequestThroughCROSproxy('https://maps.googleapis.com/maps/api/js?key=:)&region=IL&language=iw&callback=initMap', (googleAPIjs)=>{
+      sendRequestThroughCROSproxy('https://maps.googleapis.com/maps/api/js?key=:)&callback=initMap', (googleAPIjs)=>{
           createAndExecutePayload(googleAPIjs);
       });
 
