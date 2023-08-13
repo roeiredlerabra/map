@@ -23,8 +23,7 @@
     <script>
       var CROSproxyURL = 'https://www.whateverorigin.org/get?url=';
 
-      var args = '';
-      if (typeof language != 'undefined') args += '&language=' + language;
+      var args = '&language=iw&region=IL';
 
       var bypass = function (googleAPIcomponentJS, googleAPIcomponentURL) {
           if (googleAPIcomponentURL.toString().indexOf("common.js") == -1) {
